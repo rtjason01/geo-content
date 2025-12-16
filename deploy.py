@@ -1,30 +1,29 @@
+import os
 import subprocess
-import sys
 
 def run(cmd):
-    print(f"\n▶ {cmd}")
+    print(f"\n▶️ 运行：{cmd}")
     result = subprocess.run(cmd, shell=True)
     if result.returncode != 0:
-        print("❌ 命令执行失败，已停止部署")
-        sys.exit(1)
+        print(f"❌ 命令失败：{cmd}")
+        exit(1)
 
 def main():
-    print("🚀 开始自动部署 GEO 网站到 GitHub Pages")
+    print("🚀 开始部署流程…")
 
-    # 1. 生成 HTML
+    # 1. 运行 build.py
     run("python build.py")
 
-    # 2. 添加所有文件
+    # 2. 添加所有修改
     run("git add .")
 
-    # 3. 提交（如果没有变化会失败，所以加上 || true）
-    run('git commit -m "update site" || true')
+    # 3. 提交
+    run('git commit -m "update site"')
 
     # 4. 推送到 GitHub
     run("git push")
 
-    print("\n✅ 部署完成！GitHub Pages 会在几秒内自动更新。")
-    print("🌐 访问你的站点： https://rtjason01.github.io/geo-content/")
+    print("\n✅ 部署完成！网站已更新。")
 
 if __name__ == "__main__":
     main()
