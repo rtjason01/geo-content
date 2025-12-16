@@ -7,12 +7,25 @@ INPUT_FILE = "content.xlsx"
 OUTPUT_HTML = "docs/index.html"
 OUTPUT_SITEMAP = "docs/sitemap.xml"
 OUTPUT_ROBOTS = "docs/robots.txt"
+OUTPUT_JSON = "docs/data.json"
 
 SITE_URL = "https://rtjason01.github.io/geo-content/"
 
+def slugify(text):
+    """生成适合作为 ID 的短标签"""
+    return "".join(
+        c.lower() if c.isalnum() else "-" 
+        for c in text
+    ).strip("-")
+
 def load_content():
     df = pd.read_excel(INPUT_FILE)
-    return df.to_dict(orient="records")
+    records = df.to_dict(orient="records")
+
+    # ✅ 自动生成 ID 字段
+    for r in records:
+        r["id"] = slugify(r["question"])
+    return records
 
 def generate_schema(records):
     """生成 schema.org FAQPage 结构化数据"""
@@ -57,7 +70,7 @@ def generate_html(records, schema_json):
 
     for r in records:
         html_parts.append(f"""
-<section>
+<section id="{r['id']}">
   <h2>{r['question']}</h2>
   <p><strong>摘要：</strong>{r['summary']}</p>
   <p>{r['answer']}</p>
@@ -95,12 +108,21 @@ Sitemap: {SITE_URL}sitemap.xml
     Path(OUTPUT_ROBOTS).write_text(content, encoding="utf-8")
     print(f"✅ 已生成 robots.txt")
 
+def generate_json(records):
+    """生成 data.json（AI 知识库）"""
+    Path(OUTPUT_JSON).write_text(
+        json.dumps(records, ensure_ascii=False, indent=2),
+        encoding="utf-8"
+    )
+    print(f"✅ 已生成 data.json：{OUTPUT_JSON}")
+
 def main():
     records = load_content()
     schema_json = generate_schema(records)
     generate_html(records, schema_json)
     generate_sitemap()
     generate_robots()
+    generate_json(records)
     print("✅ build.py 已完成所有生成任务")
 
 if __name__ == "__main__":
