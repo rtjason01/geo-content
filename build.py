@@ -22,7 +22,7 @@ def load_content():
     df = pd.read_excel(INPUT_FILE)
     records = df.to_dict(orient="records")
 
-    # ✅ 自动生成 ID 字段
+    # 自动生成 ID 字段
     for r in records:
         r["id"] = slugify(r["question"])
     return records
@@ -83,7 +83,7 @@ def generate_html(records, schema_json):
     html_parts.append("</body></html>")
 
     Path(OUTPUT_HTML).write_text("\n".join(html_parts), encoding="utf-8")
-    print(f"✅ 已生成 HTML：{OUTPUT_HTML}")
+    print(f"[OK] 已生成 HTML: {OUTPUT_HTML}")
 
 def generate_sitemap():
     """生成 sitemap.xml"""
@@ -96,7 +96,7 @@ def generate_sitemap():
 </urlset>
 """
     Path(OUTPUT_SITEMAP).write_text(content, encoding="utf-8")
-    print(f"✅ 已生成 sitemap.xml")
+    print("[OK] 已生成 sitemap.xml")
 
 def generate_robots():
     """生成 robots.txt"""
@@ -106,7 +106,7 @@ Allow: /
 Sitemap: {SITE_URL}sitemap.xml
 """
     Path(OUTPUT_ROBOTS).write_text(content, encoding="utf-8")
-    print(f"✅ 已生成 robots.txt")
+    print("[OK] 已生成 robots.txt")
 
 def generate_json(records):
     """生成 data.json（AI 知识库）"""
@@ -114,7 +114,7 @@ def generate_json(records):
         json.dumps(records, ensure_ascii=False, indent=2),
         encoding="utf-8"
     )
-    print(f"✅ 已生成 data.json：{OUTPUT_JSON}")
+    print(f"[OK] 已生成 data.json: {OUTPUT_JSON}")
 
 def main():
     records = load_content()
@@ -123,7 +123,7 @@ def main():
     generate_sitemap()
     generate_robots()
     generate_json(records)
-    print("✅ build.py 已完成所有生成任务")
+    print("[OK] build.py 已完成所有生成任务")
 
 if __name__ == "__main__":
     main()
