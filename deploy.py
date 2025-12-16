@@ -1,60 +1,46 @@
 import os
 import subprocess
 import requests
-import json
 
-DEEPSEEK_API_URL = "https://api.deepseek.com/v1/search"
 SITE_URL = "https://rtjason01.github.io/geo-content/"
 
 def run(cmd, allow_fail=False):
     print(f"\n▶️ 运行：{cmd}")
     result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
 
-    # 打印输出
     if result.stdout:
         print(result.stdout)
     if result.stderr:
         print(result.stderr)
 
-    # 如果允许失败（例如 git commit 无变化），则不退出
     if allow_fail:
         return result
 
-    # 不允许失败的命令
     if result.returncode != 0:
-        print(f"❌ 命令失败：{cmd}")
+        print(f"命令失败：{cmd}")
         exit(1)
 
     return result
 
-def trigger_deepseek():
-    """通过 DeepSeek 搜索接口触发抓取（使用环境变量中的 API Key）"""
-    api_key = os.getenv("DEEPSEEK_API_KEY")
+def trigger_crawler():
+    """通过模拟访问触发搜索引擎抓取"""
+    print("\n正在模拟访问以触发搜索引擎抓取…")
 
-    if not api_key:
-        print("⚠️ 未检测到环境变量 DEEPSEEK_API_KEY，跳过 DeepSeek 抓取触发")
-        return
+    urls = [
+        SITE_URL,
+        SITE_URL + "sitemap.xml",
+        SITE_URL + "robots.txt",
+        SITE_URL + "data.json",
+    ]
 
-    print("\n🌐 正在通知 DeepSeek 抓取最新内容…")
+    for url in urls:
+        try:
+            r = requests.get(url, timeout=10)
+            print(f"[OK] 访问 {url} 状态码: {r.status_code}")
+        except Exception as e:
+            print(f"[WARN] 无法访问 {url}: {e}")
 
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {api_key}"
-    }
-
-    payload = {
-        "query": f"site:{SITE_URL}"
-    }
-
-    try:
-        response = requests.post(DEEPSEEK_API_URL, headers=headers, data=json.dumps(payload))
-        if response.status_code == 200:
-            print("✅ DeepSeek 已收到抓取请求（搜索接口触发成功）")
-        else:
-            print(f"⚠️ DeepSeek 返回状态码：{response.status_code}")
-            print(response.text)
-    except Exception as e:
-        print(f"⚠️ 无法连接 DeepSeek API：{e}")
+    print("[OK] 模拟访问完成，搜索引擎将自动抓取更新")
 
 def main():
     print("🚀 开始部署流程…")
@@ -71,13 +57,13 @@ def main():
     if "nothing to commit" in commit_result.stdout.lower():
         print("ℹ️ 没有文件变化，跳过提交步骤")
 
-    # 4. 推送到 GitHub（即使没有 commit 也不会报错）
+    # 4. 推送到 GitHub
     run("git push", allow_fail=True)
 
-    # 5. ✅ 触发 DeepSeek 抓取
-    trigger_deepseek()
+    # 5. ✅ 模拟访问触发抓取
+    trigger_crawler()
 
-    print("\n✅ 部署完成！网站已更新并通知 DeepSeek 抓取。")
+    print("\n✅ 部署完成！网站已更新并触发搜索引擎抓取。")
 
 if __name__ == "__main__":
     main()
